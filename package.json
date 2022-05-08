@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "express": "^4.18.1",
+    "mongodb": "^4.5.0",
+    "swagger-ui-express": "^4.3.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "nodemon": "nodemon server.js"
+  },
+  "name": "digital_twin_herne_backend",
+  "version": "1.0.0",
+  "description": "The backend for the Digital Twin Herne",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t16h05008/Digital_Twin_Herne_Backend.git"
+  },
+  "author": "Tim Herker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/t16h05008/Digital_Twin_Herne_Backend/issues"
+  },
+  "homepage": "https://github.com/t16h05008/Digital_Twin_Herne_Backend#readme"
+}
