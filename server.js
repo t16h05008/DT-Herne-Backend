@@ -3,14 +3,34 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
 const MongoDB = require("mongodb");
 const cors = require('cors');
+var path = require('path');
 
 const app = express();
 app.use(cors());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Expose the dem file structure
+const expressStaticOptions = {
+    setHeaders: function(res, path) {
+        // Set header according to path
+        if(path.endsWith(".json")) {
+            res.setHeader("Content-Type", "application/json");
+        } else {
+            res.setHeader('Content-Encoding', 'gzip')
+        }
+        
+       
+    }
+}
+app.use("/terrain/dem1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
+app.use("/terrain/dem10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
+app.use("/terrain/dem25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
+app.use("/terrain/dem50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
 const port = 8000;
+
 let mongoDbClient, mongoDbConnection;
 
 app.listen(port, () => {
+    
     connectToMongoDB();
 });
 
@@ -49,7 +69,6 @@ app.get("/3d-models/buildings/:id", (req, res) => {
                 // Get the 3D-model
                 if(result.length === 1) {
                     result = result[0];
-                    console.log(result)
                     let filename = result.filename;
 
                     let fileStream = bucket.openDownloadStreamByName(filename,);
@@ -66,6 +85,30 @@ app.get("/3d-models/buildings/:id", (req, res) => {
     });
 });
 
+app.get("/terrain/dem/1", (req, res) => {
+    return handleDemRequest(req, res);
+});
+
+app.get("/terrain/dem/10", (req, res) => {
+    return handleDemRequest(req, res);
+});
+
+app.get("/terrain/dem/25", (req, res) => {
+    return handleDemRequest(req, res);
+});
+
+app.get("/terrain/dem/50", (req, res) => {
+    return handleDemRequest(req, res);
+});
+
+// We have multiple dem endpoints with different resolution
+// But they are all handled very similar
+function handleDemRequest(req, res) {
+    let resolution = req.originalUrl.split("/").at(-1);
+    // TODO store in database?
+    let layerJsonAbsPath = path.join(__dirname, "data", "terrain" + resolution, "layer.json");
+    res.sendFile(layerJsonAbsPath);
+}
 
 
 function connectToMongoDB() {
