@@ -1,2 +1,2 @@
-# Digital_Twin_Herne_Backend
-The Backend for the Digital Twin of Herne.
+# Digital Twin Herne Backend
+A prototypical Implementation of a Digital Twin for the city of Herne in Germany.
