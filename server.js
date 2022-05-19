@@ -101,6 +101,59 @@ app.get("/terrain/dem/50", (req, res) => {
     return handleDemRequest(req, res);
 });
 
+app.get("/sewers/shafts/points", (req, res) => {
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.shafts");
+        collection.find({}).toArray(function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500)
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
+        })
+    });
+});
+
+app.get("/sewers/shafts/lines", (req, res) => {
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.shaftsAsLines");
+        collection.find({}).toArray(function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500)
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
+        })
+    });
+});
+
+
+app.get("/sewers/pipes", (req, res) => {
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.pipes");
+        collection.find({}).toArray(function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500)
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
+        })
+    });
+});
+
+app.get("/pointclouds/metroStation/:id", (req, res) => {
+    res.sendStatus(200);
+});
+
 // We have multiple dem endpoints with different resolution
 // But they are all handled very similar
 function handleDemRequest(req, res) {
@@ -130,4 +183,18 @@ function connectToMongoDB() {
                 }
             );
     });
+}
+
+/**
+ * 
+ * @param {string} features | stringified array of feature objects
+ * @returns 
+ */
+function wrapInFeatureCollection(features) {
+    features = features.substring(1); // remove opening array bracket;
+    features = features.substring(0, features.length-1); // remove closing array bracket
+    let result = "{\"type\":\"FeatureCollection\",\"features\": ["
+    result += features;
+    result += "]}"
+    return result;
 }
