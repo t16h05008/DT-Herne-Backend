@@ -34,6 +34,12 @@ app.listen(port, () => {
     connectToMongoDB();
 });
 
+/*
+=================================================
+=================== API START ===================
+=================================================
+*/
+
 // get the tilesInfo document from the database and return it
 app.get("/3d-models/buildings/tilesInfo", (req, res) => {
     res.setHeader("Content-Type", "application/json");
@@ -52,6 +58,7 @@ app.get("/3d-models/buildings/tilesInfo", (req, res) => {
 });
 
 // gets building with the specified id
+// TODO ids as parameter
 app.get("/3d-models/buildings/:id", (req, res) => {
     res.setHeader("Content-Type", "application/json");
     
@@ -101,22 +108,93 @@ app.get("/terrain/dem/50", (req, res) => {
     return handleDemRequest(req, res);
 });
 
-app.get("/sewers/shafts/points", (req, res) => {
+
+/**
+ * Gets the bboxInfo for sewer shafts (points)
+ */
+ app.get("/sewers/shafts/points/bboxInfo", (req, res) => {
     const connect = mongoDbConnection;
     connect.then((client) => {
         let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.shafts");
-        collection.find({}).toArray(function(err, result) {
+        let collection = db.collection("sewers.shafts.bboxInfo");
+        // Has only one document
+        collection.findOne({}, function(err, result) {
             if(err) {
                 console.err(err)
                 res.sendStatus(500)
             }
             res.setHeader("Content-Type", "application/json");
-            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
-        })
+            res.send(result);
+        });
     });
 });
 
+
+/**
+ * Gets all sewer shafts (points).
+ * Optionally a search parameter "ids" can ba passed, containing a comma separated list of ids
+ * TODO this approach will explode once the url get too long, but for the amount of data we work with now it is ok.
+ * Firefox and Chrome can handle 100k+ characters
+ */
+app.get("/sewers/shafts/points", (req, res) => {
+    // See if any parameters were passed
+    let ids = req.query.ids;
+
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.shafts");
+        if(!ids) {
+            // return all documents
+            collection.find({}).toArray(function(err, result) {
+                if(err) {
+                    console.err(err)
+                    res.sendStatus(500)
+                }
+                res.setHeader("Content-Type", "application/json");
+                res.send(wrapInFeatureCollection(JSON.stringify(result)));
+            })
+        } else {
+            let idsArr = ids.split(",");
+            idsArr = idsArr.map( id => parseInt(id));
+            let query = { "properties.id": { $in: idsArr } }
+            collection.find(query).toArray(function(err, result) {
+                if(err) {
+                    console.err(err)
+                    res.sendStatus(500)
+                }
+                res.setHeader("Content-Type", "application/json");
+                res.send(wrapInFeatureCollection(JSON.stringify(result)));
+            })
+        }
+        
+    });
+});
+
+/**
+ * Gets the bboxInfo for sewer shafts (lines)
+ */
+ app.get("/sewers/shafts/lines/bboxInfo", (req, res) => {
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.shaftsAsLines.bboxInfo");
+        // Has only one document
+        collection.findOne({}, function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500)
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(result);
+        });
+    });
+});
+
+
+/**
+ * Gets all sewer shafts (lines)
+ */
 app.get("/sewers/shafts/lines", (req, res) => {
     const connect = mongoDbConnection;
     connect.then((client) => {
@@ -134,6 +212,30 @@ app.get("/sewers/shafts/lines", (req, res) => {
 });
 
 
+/**
+ * Gets the bboxInfo for sewer pipes
+ */
+app.get("/sewers/pipes/bboxInfo", (req, res) => {
+    const connect = mongoDbConnection;
+    connect.then((client) => {
+        let db = client.db("DigitalerZwillingHerne");
+        let collection = db.collection("sewers.pipes.bboxInfo");
+        // Has only one document
+        collection.findOne({}, function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500)
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(result);
+        });
+    });
+});
+
+
+/**
+ * Gets all sewer pipes
+ */
 app.get("/sewers/pipes", (req, res) => {
     const connect = mongoDbConnection;
     connect.then((client) => {
@@ -150,9 +252,13 @@ app.get("/sewers/pipes", (req, res) => {
     });
 });
 
-app.get("/pointclouds/metroStation/:id", (req, res) => {
-    res.sendStatus(200);
-});
+
+/*
+=================================================
+=================== API END =====================
+=================================================
+*/
+
 
 // We have multiple dem endpoints with different resolution
 // But they are all handled very similar
