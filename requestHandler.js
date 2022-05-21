@@ -8,7 +8,7 @@ const dbName = "DigitalerZwillingHerne"
 // This logic is outsourced here to keep the apiEndpoints file as concise as possible.
 
 module.exports.handle = (req, res, dbConnection) => {
-    const path = req.path;
+    const path = req.route.path;
     // Get the handler function depending on path
     // mapEndpointToHandlerFunction is defined at the bottom of this file
     let handler = mapEndpointToHandlerFunction[path];
@@ -78,7 +78,7 @@ let getSewerShaftsPointsBboxInfo = (req, res, dbConnection) => {
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.shafts.points.bboxInfo");
-        return getSewerBboxInfo(collection);
+        return getSewerBboxInfo(collection, res);
     });
 }
 
@@ -88,7 +88,7 @@ let getSewerShaftsLinesBboxInfo = (req, res, dbConnection) => {
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.shafts.lines.bboxInfo");
-        return getSewerBboxInfo(collection);
+        return getSewerBboxInfo(collection, res);
     });
 }
 
@@ -98,7 +98,7 @@ let getSewerPipesBboxInfo = (req, res, dbConnection) => {
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.pipes.bboxInfo");
-        return getSewerBboxInfo(collection);
+        return getSewerBboxInfo(collection, res);
     });
 }
 
@@ -148,16 +148,21 @@ function wrapInFeatureCollection(features) {
 // We have multiple dem endpoints with different resolution
 // But they are all handled very similar
 function handleDemRequest(req, res) {
-    let resolution = req.originalUrl.split("/").at(-1);
+    let resolution = req.params.resolution;
     // Get the layer.json that corresponds to the requested resolution and return it.
     // The client can do subsequent requests directly on the folder structure in the directory.
     let layerJsonAbsPath = path.join(__dirname, "data", "terrain" + resolution, "layer.json");
-    res.setHeader("Content-Type", "application/json");
-    res.sendFile(layerJsonAbsPath);
+    if(checkFileExistsSync(layerJsonAbsPath)) {
+        res.setHeader("Content-Type", "application/json");
+        res.sendFile(layerJsonAbsPath);
+    } else {
+        res.sendStatus(404);
+    }
+    
 }
 
 
-function getSewerBboxInfo(collection) {
+function getSewerBboxInfo(collection, res) {
     // Has only one document
     collection.findOne({}, function(err, result) {
         if(err) {
@@ -199,15 +204,22 @@ function getSewerFeatures(collection, ids, res) {
     })
 }
 
+function checkFileExistsSync(filepath){
+    let flag = true;
+    try{
+      fs.accessSync(filepath, fs.constants.F_OK);
+    }catch(e){
+      flag = false;
+    }
+    return flag;
+}
+
 
 // Has to be defined at the bottom because we use functions as variables
 const mapEndpointToHandlerFunction = {
     "/buildings": getBuildings,
     "/buildings/tilesInfo": getBuildingTilesInfo,
-    "/terrain/dem/1":  handleDemRequest,
-    "/terrain/dem/10": handleDemRequest,
-    "/terrain/dem/25": handleDemRequest,
-    "/terrain/dem/50": handleDemRequest,
+    "/terrain/dem/:resolution":  handleDemRequest,
     "/sewers/shafts/points": getSewerShaftsPoints,
     "/sewers/shafts/points/bboxInfo": getSewerShaftsPointsBboxInfo,
     "/sewers/shafts/lines": getSewerShaftsLines,
