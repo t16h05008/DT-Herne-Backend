@@ -5,8 +5,14 @@ const MongoDB = require("mongodb");
 const cors = require('cors');
 const apiEndpoints = require("./apiEndpoints");
 
+const app = express();
+const port = 8000;
+app.use(cors());
+
+let dbConnection;
+
 const swaggerOptions = {
-    swaggerDefinition: {
+    definition: {
         info: {
             title: "Digital Twin Herne Backend API",
             description: "The backend api for the Digital Twin of the city of Herne in Germany.",
@@ -22,18 +28,13 @@ const swaggerOptions = {
             version: "1.0.0"
         },
         servers: ["https://localhost:8000"], // TODO
-        openapi: "3.0.0",
+        swagger: "2.0.0"
     },
-    apis: ["apiEndpoints.js"],
+    apis: ["./apiEndpoints.js"],
 }
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-
-const app = express();
-const port = 8000;
-app.use(cors());
-let dbConnection;
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 // Expose the dem file structure
 const expressStaticOptions = {
     setHeaders: function(res, path) {
@@ -45,11 +46,12 @@ const expressStaticOptions = {
         }
     }
 }
-
 app.use("/terrain/dem1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
 app.use("/terrain/dem10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
 app.use("/terrain/dem25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
 app.use("/terrain/dem50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
+
+
 
 app.listen(port, () => {
     connectToMongoDB();
@@ -57,12 +59,13 @@ app.listen(port, () => {
 });
 
 
+
 function connectToMongoDB() {
-    mongoDbUri = "mongodb://localhost:27017"; // for development, has to be replaced later
+    mongoDbUri = "mongodb://localhost:27017"; // TODO For development, has to be replaced later
     let mongoDbClient = new MongoDB.MongoClient(mongoDbUri);
-    dbConnection = mongoDbClient.connect(); // initialized connection
+    dbConnection = mongoDbClient.connect(); // Initialized connection
     const connect = dbConnection;
-    // test connection
+    // Test connection
     connect.then(async () => {
         await mongoDbClient
             .db("admin")
