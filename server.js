@@ -1,13 +1,39 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger.json");
+const swaggerJsDoc = require("swagger-jsdoc");
 const MongoDB = require("mongodb");
 const cors = require('cors');
-var path = require('path');
+const apiEndpoints = require("./apiEndpoints");
+
+const swaggerOptions = {
+    swaggerDefinition: {
+        info: {
+            title: "Digital Twin Herne Backend API",
+            description: "The backend api for the Digital Twin of the city of Herne in Germany.",
+            contact: {
+                // TODO for now
+                name: "Tim Herker",
+                email: "tim.herker@stud.hs-bochum.de"
+            },
+            license: {
+                name: "MIT",
+                url: "https://opensource.org/licenses/MIT"
+            },
+            version: "1.0.0"
+        },
+        servers: ["https://localhost:8000"], // TODO
+        openapi: "3.0.0",
+    },
+    apis: ["apiEndpoints.js"],
+}
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 const app = express();
+const port = 8000;
 app.use(cors());
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+let dbConnection;
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Expose the dem file structure
 const expressStaticOptions = {
     setHeaders: function(res, path) {
@@ -17,264 +43,25 @@ const expressStaticOptions = {
         } else {
             res.setHeader('Content-Encoding', 'gzip')
         }
-        
-       
     }
 }
+
 app.use("/terrain/dem1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
 app.use("/terrain/dem10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
 app.use("/terrain/dem25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
 app.use("/terrain/dem50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
-const port = 8000;
-
-let mongoDbClient, mongoDbConnection;
 
 app.listen(port, () => {
-    
     connectToMongoDB();
+    apiEndpoints.setup(app, dbConnection);
 });
-
-/*
-=================================================
-=================== API START ===================
-=================================================
-*/
-
-// get the tilesInfo document from the database and return it
-app.get("/3d-models/buildings/tilesInfo", (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("buildings.tileInfo");
-        // collection has only one entry
-        collection.findOne({}, function(err, result) {
-            if(err) throw err;
-            // Return the tiles array directly
-            res.send(result.tiles)
-        })
-    });
-});
-
-// gets building with the specified id
-// TODO ids as parameter
-app.get("/3d-models/buildings/:id", (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-    
-    const buildingId = req.params.id;
-    const connect = mongoDbConnection;
-    connect.then(client => {
-        let db = client.db("DigitalerZwillingHerne");
-
-        const bucket = new MongoDB.GridFSBucket(db, { bucketName: 'buildings' });
-        bucket.find({ 'metadata.id' : buildingId }).toArray( function(err, result) {
-            if(err) throw err;
-            if(!result.length) {
-                res.sendStatus(404); // not found
-            } else {
-                // Get the 3D-model
-                if(result.length === 1) {
-                    result = result[0];
-                    let filename = result.filename;
-
-                    let fileStream = bucket.openDownloadStreamByName(filename,);
-                    fileStream.on("error", err => {
-                        fileStream.abort();
-                        console.err(err)
-                    });
-                    fileStream.pipe(res);
-                } else {
-                    throw new Error("More than one document found, which should not happen...")
-                }
-            }
-        });
-    });
-});
-
-app.get("/terrain/dem/1", (req, res) => {
-    return handleDemRequest(req, res);
-});
-
-app.get("/terrain/dem/10", (req, res) => {
-    return handleDemRequest(req, res);
-});
-
-app.get("/terrain/dem/25", (req, res) => {
-    return handleDemRequest(req, res);
-});
-
-app.get("/terrain/dem/50", (req, res) => {
-    return handleDemRequest(req, res);
-});
-
-
-/**
- * Gets the bboxInfo for sewer shafts (points)
- */
- app.get("/sewers/shafts/points/bboxInfo", (req, res) => {
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.shafts.bboxInfo");
-        // Has only one document
-        collection.findOne({}, function(err, result) {
-            if(err) {
-                console.err(err)
-                res.sendStatus(500)
-            }
-            res.setHeader("Content-Type", "application/json");
-            res.send(result);
-        });
-    });
-});
-
-
-/**
- * Gets all sewer shafts (points).
- * Optionally a search parameter "ids" can ba passed, containing a comma separated list of ids
- * TODO this approach will explode once the url get too long, but for the amount of data we work with now it is ok.
- * Firefox and Chrome can handle 100k+ characters
- */
-app.get("/sewers/shafts/points", (req, res) => {
-    // See if any parameters were passed
-    let ids = req.query.ids;
-
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.shafts");
-        if(!ids) {
-            // return all documents
-            collection.find({}).toArray(function(err, result) {
-                if(err) {
-                    console.err(err)
-                    res.sendStatus(500)
-                }
-                res.setHeader("Content-Type", "application/json");
-                res.send(wrapInFeatureCollection(JSON.stringify(result)));
-            })
-        } else {
-            let idsArr = ids.split(",");
-            idsArr = idsArr.map( id => parseInt(id));
-            let query = { "properties.id": { $in: idsArr } }
-            collection.find(query).toArray(function(err, result) {
-                if(err) {
-                    console.err(err)
-                    res.sendStatus(500)
-                }
-                res.setHeader("Content-Type", "application/json");
-                res.send(wrapInFeatureCollection(JSON.stringify(result)));
-            })
-        }
-        
-    });
-});
-
-/**
- * Gets the bboxInfo for sewer shafts (lines)
- */
- app.get("/sewers/shafts/lines/bboxInfo", (req, res) => {
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.shaftsAsLines.bboxInfo");
-        // Has only one document
-        collection.findOne({}, function(err, result) {
-            if(err) {
-                console.err(err)
-                res.sendStatus(500)
-            }
-            res.setHeader("Content-Type", "application/json");
-            res.send(result);
-        });
-    });
-});
-
-
-/**
- * Gets all sewer shafts (lines)
- */
-app.get("/sewers/shafts/lines", (req, res) => {
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.shaftsAsLines");
-        collection.find({}).toArray(function(err, result) {
-            if(err) {
-                console.err(err)
-                res.sendStatus(500)
-            }
-            res.setHeader("Content-Type", "application/json");
-            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
-        })
-    });
-});
-
-
-/**
- * Gets the bboxInfo for sewer pipes
- */
-app.get("/sewers/pipes/bboxInfo", (req, res) => {
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.pipes.bboxInfo");
-        // Has only one document
-        collection.findOne({}, function(err, result) {
-            if(err) {
-                console.err(err)
-                res.sendStatus(500)
-            }
-            res.setHeader("Content-Type", "application/json");
-            res.send(result);
-        });
-    });
-});
-
-
-/**
- * Gets all sewer pipes
- */
-app.get("/sewers/pipes", (req, res) => {
-    const connect = mongoDbConnection;
-    connect.then((client) => {
-        let db = client.db("DigitalerZwillingHerne");
-        let collection = db.collection("sewers.pipes");
-        collection.find({}).toArray(function(err, result) {
-            if(err) {
-                console.err(err)
-                res.sendStatus(500)
-            }
-            res.setHeader("Content-Type", "application/json");
-            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
-        })
-    });
-});
-
-
-/*
-=================================================
-=================== API END =====================
-=================================================
-*/
-
-
-// We have multiple dem endpoints with different resolution
-// But they are all handled very similar
-function handleDemRequest(req, res) {
-    let resolution = req.originalUrl.split("/").at(-1);
-    // TODO store in database?
-    let layerJsonAbsPath = path.join(__dirname, "data", "terrain" + resolution, "layer.json");
-    res.sendFile(layerJsonAbsPath);
-}
 
 
 function connectToMongoDB() {
     mongoDbUri = "mongodb://localhost:27017"; // for development, has to be replaced later
-    mongoDbClient = new MongoDB.MongoClient(mongoDbUri);
-    mongoDbConnection = mongoDbClient.connect(); // initialized connection
-    const connect = mongoDbConnection;
+    let mongoDbClient = new MongoDB.MongoClient(mongoDbUri);
+    dbConnection = mongoDbClient.connect(); // initialized connection
+    const connect = dbConnection;
     // test connection
     connect.then(async () => {
         await mongoDbClient
@@ -291,16 +78,3 @@ function connectToMongoDB() {
     });
 }
 
-/**
- * 
- * @param {string} features | stringified array of feature objects
- * @returns 
- */
-function wrapInFeatureCollection(features) {
-    features = features.substring(1); // remove opening array bracket;
-    features = features.substring(0, features.length-1); // remove closing array bracket
-    let result = "{\"type\":\"FeatureCollection\",\"features\": ["
-    result += features;
-    result += "]}"
-    return result;
-}
