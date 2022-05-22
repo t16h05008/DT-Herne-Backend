@@ -27,13 +27,25 @@ const swaggerOptions = {
             },
             version: "1.0.0"
         },
-        servers: ["https://localhost:8000"], // TODO
-        swagger: "2.0.0"
+        servers: [
+            {
+                url: "http://localhost:8000",
+                description: "For development"
+            }
+        ],
+        openapi: '3.0.3'
     },
     apis: ["./apiEndpoints.js"],
 }
+const swaggerUiOptions = {
+    swaggerOptions: {
+        // Sort endpoints alphabetically by tags, then by paths
+        operationsSorter : "alpha",
+        tagsSorter: "alpha"
+      }
+}
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
 
 // Expose the dem file structure
 const expressStaticOptions = {
@@ -46,10 +58,10 @@ const expressStaticOptions = {
         }
     }
 }
-app.use("/terrain/dem1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
-app.use("/terrain/dem10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
-app.use("/terrain/dem25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
-app.use("/terrain/dem50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
+app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
+app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
+app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
+app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
 
 
 

@@ -1,8 +1,9 @@
 const MongoDB = require("mongodb");
 const MultiStream = require('multistream')
-const path = require('path');
+const path = require("path");
+const fs = require("fs");
 
-const dbName = "DigitalerZwillingHerne"
+const dbName = "DigitalerZwillingHerne" // TODO put in config file
 
 // This file is responsible for handling the requests and communicating with the database.
 // This logic is outsourced here to keep the apiEndpoints file as concise as possible.
@@ -33,7 +34,6 @@ let getBuildingTilesInfo = (req, res, dbConnection) => {
 
 
 let getBuildings = (req, res, dbConnection) => {
-    res.setHeader("Content-Type", "application/json");
     const ids = req.query.ids;
 
     const connect = dbConnection;
@@ -53,6 +53,7 @@ let getBuildings = (req, res, dbConnection) => {
             if(err) throw err;
             if(!result.length) {
                 res.sendStatus(404); // If none of the ids were found. Of some are missing, they are ignored.
+                return;
             } else {
                 // Get the 3D-models
                 let streams = [];
@@ -66,6 +67,7 @@ let getBuildings = (req, res, dbConnection) => {
                     streams.push(fileStream)
                 }
                 // Pipe streams into res in sequential order
+                res.setHeader("Content-Type", "application/json");
                 new MultiStream(streams).pipe(res)
             }
         });
@@ -151,14 +153,13 @@ function handleDemRequest(req, res) {
     let resolution = req.params.resolution;
     // Get the layer.json that corresponds to the requested resolution and return it.
     // The client can do subsequent requests directly on the folder structure in the directory.
-    let layerJsonAbsPath = path.join(__dirname, "data", "terrain" + resolution, "layer.json");
-    if(checkFileExistsSync(layerJsonAbsPath)) {
+    let filepath = path.join(__dirname, "data", "terrain" + resolution, "layer.json")
+    if(checkFileExistsSync(filepath)) {
         res.setHeader("Content-Type", "application/json");
-        res.sendFile(layerJsonAbsPath);
+        res.sendFile(filepath);
     } else {
         res.sendStatus(404);
     }
-    
 }
 
 
@@ -203,6 +204,7 @@ function getSewerFeatures(collection, ids, res) {
         res.send(wrapInFeatureCollection( JSON.stringify(result) ));
     })
 }
+
 
 function checkFileExistsSync(filepath){
     let flag = true;
