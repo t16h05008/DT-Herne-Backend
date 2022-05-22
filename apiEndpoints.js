@@ -59,6 +59,37 @@ module.exports.setup = (app, dbConnection) => {
 
     /**
      * @swagger
+     * /buildings/attributes:
+     *   get:
+     *     summary: Gets the attributes for the specified buildings in json format.
+     *     tags:
+     *       - buildings
+     *     parameters:
+     *       - in: query
+     *         name: ids
+     *         description: The numeric, comma-separated ids of the buildings to query. Ids are ascending integers, starting at 1.
+     *         schema:
+     *           type: array
+     *           items:
+     *              type: integer
+     *         example: 1,3,5
+     *         required: false
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
+     app.get("/buildings/attributes", (req, res) => {
+        return requestHandler.handle(req, res, dbConnection);
+    });
+
+    /**
+     * @swagger
      * /terrain/dem/{resolution}:
      *   get:
      *     summary: Gets a json document, that contains information about the format and file structure the terrain is stored in

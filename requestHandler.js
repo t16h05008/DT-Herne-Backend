@@ -75,6 +75,36 @@ let getBuildings = (req, res, dbConnection) => {
 }
 
 
+let getBuildingAttributes = (req, res, dbConnection) => {
+    const ids = req.query.ids;
+    const connect = dbConnection;
+    connect.then(client => {
+        let db = client.db(dbName);
+        let collection = db.collection("buildings.attributes")
+        if(!ids) {
+            query = {} // Return all documents
+        } else {
+            let idsArr = ids.split(",");
+            idsArr = idsArr.map( id => parseInt(id));
+            query = { "id": { $in: idsArr } }
+        }
+        collection.find(query).toArray(function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500);
+                return;
+            }
+            if(result.length === 0) {
+                res.sendStatus(404);
+                return;
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(result);
+        });
+    });
+}
+
+
 let getSewerShaftsPointsBboxInfo = (req, res, dbConnection) => {
     const connect = dbConnection;
     connect.then((client) => {
@@ -221,6 +251,7 @@ function checkFileExistsSync(filepath){
 const mapEndpointToHandlerFunction = {
     "/buildings": getBuildings,
     "/buildings/tilesInfo": getBuildingTilesInfo,
+    "/buildings/attributes": getBuildingAttributes,
     "/terrain/dem/:resolution":  handleDemRequest,
     "/sewers/shafts/points": getSewerShaftsPoints,
     "/sewers/shafts/points/bboxInfo": getSewerShaftsPointsBboxInfo,
