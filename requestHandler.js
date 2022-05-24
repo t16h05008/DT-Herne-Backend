@@ -81,6 +81,7 @@ let getBuildingAttributes = (req, res, dbConnection) => {
     connect.then(client => {
         let db = client.db(dbName);
         let collection = db.collection("buildings.attributes")
+        let projection = { _id: 0 } // Don't return internal id
         if(!ids) {
             query = {} // Return all documents
         } else {
@@ -88,7 +89,7 @@ let getBuildingAttributes = (req, res, dbConnection) => {
             idsArr = idsArr.map( id => parseInt(id));
             query = { "id": { $in: idsArr } }
         }
-        collection.find(query).toArray(function(err, result) {
+        collection.find(query).project(projection).toArray(function(err, result) {
             if(err) {
                 console.err(err)
                 res.sendStatus(500);
