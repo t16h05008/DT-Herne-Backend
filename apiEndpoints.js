@@ -287,4 +287,10 @@ module.exports.setup = (app, dbConnection) => {
     app.get("/sewers/pipes", (req, res) => {
         return requestHandler.handle(req, res, dbConnection);
     });
+
+
+    // TODO document
+    app.get("/metrostation/pointcloud", (req, res) => {
+        return requestHandler.handle(req, res, dbConnection);
+    });
 };

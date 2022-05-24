@@ -48,7 +48,7 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
 
 // Expose the dem file structure
-const expressStaticOptions = {
+const expressStaticOptionsDEM = {
     setHeaders: function(res, path) {
         // Set header according to path
         if(path.endsWith(".json")) {
@@ -58,12 +58,11 @@ const expressStaticOptions = {
         }
     }
 }
-app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', expressStaticOptions));
-app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', expressStaticOptions));
-app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', expressStaticOptions));
-app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', expressStaticOptions));
-
-
+app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', expressStaticOptionsDEM));
+app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', expressStaticOptionsDEM));
+app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', expressStaticOptionsDEM));
+app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', expressStaticOptionsDEM));
+app.use("/metrostation/pointcloud", express.static(__dirname + "/data/metrostationPointcloud"));
 
 app.listen(port, () => {
     connectToMongoDB();

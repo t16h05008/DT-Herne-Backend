@@ -167,6 +167,17 @@ let getSewerPipes = (req, res, dbConnection) => {
 }
 
 
+let getMetroPointcloud = (req, res, dbConnection) => {
+    let filepath = path.join(__dirname, "data", "metrostationPointcloud", "tileset.json")
+    if(checkFileExistsSync(filepath)) {
+        res.setHeader("Content-Type", "application/json");
+        res.sendFile(filepath);
+    } else {
+        res.sendStatus(404);
+    }
+}
+
+
 function wrapInFeatureCollection(features) {
     features = features.substring(1); // remove opening array bracket;
     features = features.substring(0, features.length-1); // remove closing array bracket
@@ -247,6 +258,8 @@ function checkFileExistsSync(filepath){
 }
 
 
+
+
 // Has to be defined at the bottom because we use functions as variables
 const mapEndpointToHandlerFunction = {
     "/buildings": getBuildings,
@@ -259,4 +272,5 @@ const mapEndpointToHandlerFunction = {
     "/sewers/shafts/lines/bboxInfo": getSewerShaftsLinesBboxInfo,
     "/sewers/pipes": getSewerPipes,
     "/sewers/pipes/bboxInfo": getSewerPipesBboxInfo,
+    "/metrostation/pointcloud": getMetroPointcloud,
 }
