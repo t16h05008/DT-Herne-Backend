@@ -154,6 +154,38 @@ module.exports.setup = (app, dbConnection) => {
 
     /**
      * @swagger
+     * /sewers/shafts/attributes:
+     *   get:
+     *     summary: Gets the attributes for the specified sewer shafts in json format.
+     *     tags:
+     *       - sewers
+     *     parameters:
+     *       - in: query
+     *         name: ids
+     *         description: The numeric, comma-separated ids of the sewer shafts to query. Ids are integers.
+     *         schema:
+     *           type: array
+     *           items:
+     *              type: integer
+     *         example: 1,3,5
+     *         required: false
+     * 
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/geojson:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
+     app.get("/sewers/shafts/attributes", (req, res) => {
+        return requestHandler.handle(req, res, dbConnection);
+    });
+
+    /**
+     * @swagger
      * /sewers/pipes:
      *   get:
      *     summary: Gets the sewer pipes as geoJson line geometries (feature collection).
@@ -180,6 +212,38 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
      app.get("/sewers/pipes", (req, res) => {
+        return requestHandler.handle(req, res, dbConnection);
+    });
+
+    /**
+     * @swagger
+     * /sewers/pipes/attributes:
+     *   get:
+     *     summary: Gets the attributes for the specified sewer pipes in json format.
+     *     tags:
+     *       - sewers
+     *     parameters:
+     *       - in: query
+     *         name: ids
+     *         description: The numeric, comma-separated ids of the sewer pipes to query. Ids are integers.
+     *         schema:
+     *           type: array
+     *           items:
+     *              type: integer
+     *         example: 1,3,5
+     *         required: false
+     * 
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/geojson:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
+     app.get("/sewers/pipes/attributes", (req, res) => {
         return requestHandler.handle(req, res, dbConnection);
     });
 

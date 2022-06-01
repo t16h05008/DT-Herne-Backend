@@ -127,6 +127,25 @@ let getSewerPipes = (req, res, dbConnection) => {
     });
 }
 
+let getSewerShaftsAttributes = (req, res, dbConnection) => {
+    const ids = req.query.ids;
+    const connect = dbConnection;
+    connect.then((client) => {
+        let db = client.db(dbName);
+        let collection = db.collection("sewers.shafts");
+        return getSewerAttributes(collection, ids, res)
+    });
+}
+
+let getSewerPipesAttributes = (req, res, dbConnection) => {
+    const ids = req.query.ids;
+    const connect = dbConnection;
+    connect.then((client) => {
+        let db = client.db(dbName);
+        let collection = db.collection("sewers.pipes");
+        return getSewerAttributes(collection, ids, res)
+    });
+}
 
 let getMetroPointcloud = (req, res, dbConnection) => {
     let filepath = path.join(__dirname, "data", "metrostationPointcloud", "tileset.json")
@@ -165,9 +184,16 @@ function handleDemRequest(req, res) {
 }
 
 
-function getSewerBboxInfo(collection, res) {
-    // Has only one document
-    collection.findOne({}, function(err, result) {
+function getSewerAttributes(collection, ids, res) {
+    let projection = { _id: 0 } // Don't return internal id
+    if(!ids) {
+        query = {} // Return all documents
+    } else {
+        let idsArr = ids.split(",");
+        idsArr = idsArr.map( id => parseInt(id));
+        query = { "properties.id": { $in: idsArr } }
+    }
+    collection.find(query).project(projection).toArray(function(err, result) {
         if(err) {
             console.err(err)
             res.sendStatus(500);
@@ -244,8 +270,8 @@ const mapEndpointToHandlerFunction = {
     "/buildings/attributes": getBuildingAttributes,
     "/terrain/dem/:resolution":  handleDemRequest,
     "/sewers/shafts": getSewerShafts,
-    //"/sewers/shafts/attributes": getSewerShaftsAttributes,
+    "/sewers/shafts/attributes": getSewerShaftsAttributes,
     "/sewers/pipes": getSewerPipes,
-    //"/sewers/pipes/attributes": getSewerPipesAttributes,
+    "/sewers/pipes/attributes": getSewerPipesAttributes,
     "/metrostation/pointcloud": getMetroPointcloud,
 }
