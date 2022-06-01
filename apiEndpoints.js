@@ -122,34 +122,7 @@ module.exports.setup = (app, dbConnection) => {
 
     /**
      * @swagger
-     * /sewers/shafts/points/bboxInfo:
-     *   get:
-     *     summary: Gets a json document, that contains information about the bounding boxes of sewer shafts.
-     *     description: Of course, getting the bounding boy of a point has little to no use.
-     *                  This endpoint only exists to have a consistent way to get this information for all types of sewer geometries.
-     *     tags:
-     *       - sewers
-     *     produces:
-     *       - application/json
-     *     responses:
-     *       200:
-     *         description: Ok
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *       404:
-     *         description: Not found
-     *       500:
-     *         description: Internal Server Error
-     */
-    app.get("/sewers/shafts/points/bboxInfo", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
-    });
-
-    /**
-     * @swagger
-     * /sewers/shafts/points:
+     * /sewers/shafts:
      *   get:
      *     summary: Gets the sewer shafts as geoJson point geometries (feature collection).
      *     tags:
@@ -175,85 +148,7 @@ module.exports.setup = (app, dbConnection) => {
      *       404:
      *         description: Not found
      */
-    app.get("/sewers/shafts/points", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
-    });
-
-    /**
-     * @swagger
-     * /sewers/shafts/lines/bboxInfo:
-     *   get:
-     *     summary: Gets a json document, that contains information about the bounding boxes of sewer shafts (line geometries).
-     *     tags:
-     *       - sewers
-     *     responses:
-     *       200:
-     *         description: Ok
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *       404:
-     *         description: Not found
-     *       500:
-     *         description: Internal Server Error
-     */
-    app.get("/sewers/shafts/lines/bboxInfo", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
-    });
-
-    /**
-     * @swagger
-     * /sewers/shafts/lines:
-     *   get:
-     *     summary: Gets the sewer shafts as geoJson line geometries (feature collection).
-     *     description: Each line is vertical and represents the depth of the shaft.
-     *     tags:
-     *       - sewers
-     *     parameters:
-     *       - in: query
-     *         name: ids
-     *         description: The numeric, comma-separated ids of the sewer shafts to query. Ids are integers.
-     *         schema:
-     *           type: array
-     *           items:
-     *              type: integer
-     *         example: 1,3,5
-     *         required: false
-     *     responses:
-     *       200:
-     *         description: Ok
-     *         content:
-     *           application/geojson:
-     *             schema:
-     *               type: object
-     *       404:
-     *         description: Not found
-     */
-    app.get("/sewers/shafts/lines", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
-    });
-
-    /**
-     * @swagger
-     * /sewers/pipes/bboxInfo:
-     *   get:
-     *     summary: Gets a json document, that contains information about the bounding boxes of sewer pipes.
-     *     tags:
-     *       - sewers
-     *     responses:
-     *       200:
-     *         description: Ok
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *       404:
-     *         description: Not found
-     *       500:
-     *         description: Internal Server Error
-     */
-    app.get("/sewers/pipes/bboxInfo", (req, res) => {
+    app.get("/sewers/shafts", (req, res) => {
         return requestHandler.handle(req, res, dbConnection);
     });
 
@@ -284,10 +179,9 @@ module.exports.setup = (app, dbConnection) => {
      *       404:
      *         description: Not found
      */
-    app.get("/sewers/pipes", (req, res) => {
+     app.get("/sewers/pipes", (req, res) => {
         return requestHandler.handle(req, res, dbConnection);
     });
-
 
     // TODO document
     app.get("/metrostation/pointcloud", (req, res) => {

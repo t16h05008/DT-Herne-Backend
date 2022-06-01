@@ -106,56 +106,16 @@ let getBuildingAttributes = (req, res, dbConnection) => {
 }
 
 
-let getSewerShaftsPointsBboxInfo = (req, res, dbConnection) => {
-    const connect = dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts.points.bboxInfo");
-        return getSewerBboxInfo(collection, res);
-    });
-}
-
-
-let getSewerShaftsLinesBboxInfo = (req, res, dbConnection) => {
-    const connect = dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts.lines.bboxInfo");
-        return getSewerBboxInfo(collection, res);
-    });
-}
-
-
-let getSewerPipesBboxInfo = (req, res, dbConnection) => {
-    const connect = dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.pipes.bboxInfo");
-        return getSewerBboxInfo(collection, res);
-    });
-}
-
-
-let getSewerShaftsPoints = (req, res, dbConnection) => {
+let getSewerShafts = (req, res, dbConnection) => {
     const ids = req.query.ids;
     const connect = dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts.points");
+        let collection = db.collection("sewers.shafts");
         return getSewerFeatures(collection, ids, res)
     });
 }
 
-
-let getSewerShaftsLines = (req, res, dbConnection) => {
-    const ids = req.query.ids;
-    const connect = dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts.lines");
-        return getSewerFeatures(collection, ids, res)
-    });
-}
 
 let getSewerPipes = (req, res, dbConnection) => {
     const ids = req.query.ids;
@@ -232,7 +192,23 @@ function getSewerFeatures(collection, ids, res) {
         idsArr = idsArr.map( id => parseInt(id));
         query = { "properties.id": { $in: idsArr } }
     }
-    collection.find(query).toArray(function(err, result) {
+    // Only return the properties, that are relevant for visualization
+    let projection = {
+        "_id": 0,
+        "type": 1,
+        "properties.id": 1,
+        "properties.Farbe": 1,
+        "geometry": 1
+    }
+    if(collection.collectionName.includes("shafts")) {
+        projection["properties.Deckelhöhe [m]"] = 1
+        projection["properties.Sohlhöhe [m]"] = 1
+    }
+    if(collection.collectionName.includes("pipes")) {
+        projection["properties.Durchmesser [mm]"] = 1
+    }
+
+    collection.find(query).project(projection).toArray(function(err, result) {
         if(err) {
             console.err(err)
             res.sendStatus(500);
@@ -267,11 +243,9 @@ const mapEndpointToHandlerFunction = {
     "/buildings/tilesInfo": getBuildingTilesInfo,
     "/buildings/attributes": getBuildingAttributes,
     "/terrain/dem/:resolution":  handleDemRequest,
-    "/sewers/shafts/points": getSewerShaftsPoints,
-    "/sewers/shafts/points/bboxInfo": getSewerShaftsPointsBboxInfo,
-    "/sewers/shafts/lines": getSewerShaftsLines,
-    "/sewers/shafts/lines/bboxInfo": getSewerShaftsLinesBboxInfo,
+    "/sewers/shafts": getSewerShafts,
+    //"/sewers/shafts/attributes": getSewerShaftsAttributes,
     "/sewers/pipes": getSewerPipes,
-    "/sewers/pipes/bboxInfo": getSewerPipesBboxInfo,
+    //"/sewers/pipes/attributes": getSewerPipesAttributes,
     "/metrostation/pointcloud": getMetroPointcloud,
 }
