@@ -191,7 +191,10 @@ let getSensorMeasurement = (req, res, params) => {
                     template.category = "fiware";
                     template.position.lon = parseFloat(json.long.value);
                     template.position.lat = parseFloat(json.lat.value);
-                    template.measurement.value = json[endpoint].value
+                    template.measurement.value = parseFloat(json[endpoint].value);
+                    if(endpoint === "temperature") template.measurement.unit = "°C";
+                    if(endpoint === "humidity") template.measurement.unit = "%";
+                    if(endpoint === "rain") template.measurement.unit = "l/m²";
                     template.measurement.time = json[endpoint].metadata.TimeInstant.value;
                 } else {
                     console.error("Could not find an appropriate mapping for sensor: ", json.id);
