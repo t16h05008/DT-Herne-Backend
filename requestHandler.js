@@ -217,6 +217,8 @@ let getSensorTimeseriesMeasurement = (req, res, params) => {
     let endpoint = req.originalUrl.split("/").at(-3);
     let sensorId = req.params.id;
     let numberOfMeasurements = req.query.n;
+    if(!numberOfMeasurements)
+        numberOfMeasurements = 200 // default
     let sensor = params.sensorInfo[endpoint].get(sensorId);
     let category = sensor["category"];
     let requestParams = {};
@@ -231,7 +233,19 @@ let getSensorTimeseriesMeasurement = (req, res, params) => {
     }
     axios.get(url, requestParams)
         .then( result => {
-            res.send(result.data)
+            let response = [];
+            let data = result.data;
+            if(category === "fiware") {
+                // Merge the 'index' and 'values' arrays
+                for(let i=0; i<data.index.length;i++) {
+                    let timestamp = data.index[i];
+                    let value = data.values[i];
+                    response.push(
+                        [timestamp, value]
+                    );
+                }
+            }
+            res.send(response)
         })
         .catch( (e) => {
             console.error(e)

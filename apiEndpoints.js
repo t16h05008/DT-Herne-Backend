@@ -169,7 +169,6 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *              type: integer
      *         example: 1,3,5
      *         required: false
-     * 
      *     responses:
      *       200:
      *         description: Ok
@@ -232,7 +231,6 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *              type: integer
      *         example: 1,3,5
      *         required: false
-     * 
      *     responses:
      *       200:
      *         description: Ok
@@ -272,7 +270,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                 properties:
      *                   id:
      *                     type: string
-     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     description: The unique sensor id. Format depends on the origin of the sensor.
      *                     example: "sensor-001"
      *                   category:
      *                     type: string
@@ -315,7 +313,49 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
-    // Gets the last n measurements of the specified sensor
+    /**
+     * @swagger
+     * /weather/temperature/timeseries/{id}:
+     *   get:
+     *     summary: Gets the last N measurements of the specified sensor
+     *     tags:
+     *       - weather
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         description: The unique sensor id. Format depends on the origin of the sensor.
+     *         schema:
+     *           type: string
+     *         example: sensor-001
+     *         required: true
+     *       - in: query
+     *         name: n
+     *         description: The number of measurements to return.
+     *         schema:
+     *           type: integer
+     *         example: 50
+     *         required: false
+     *         default: 200
+     *         minimum: 1
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: array
+     *                 description: Array of key-value-pairs, with the key being the timestamp and the value the measured value.
+     *                 minItems: 2
+     *                 maxItems: 2
+     *                 items:
+     *                   example:
+     *                     - 2022-06-09T13:30:01.272+00:00
+     *                     - 20.5
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/temperature/timeseries/:id", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
@@ -339,7 +379,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                 properties:
      *                   id:
      *                     type: string
-     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     description: The unique sensor id. Format depends on the origin of the sensor.
      *                     example: "sensor-001"
      *                   category:
      *                     type: string
@@ -382,6 +422,50 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
+
+    /**
+     * @swagger
+     * /weather/humidity/timeseries/{id}:
+     *   get:
+     *     summary: Gets the last N measurements of the specified sensor
+     *     tags:
+     *       - weather
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         description: The unique sensor id. Format depends on the origin of the sensor.
+     *         schema:
+     *           type: string
+     *         example: sensor-001
+     *         required: true
+     *       - in: query
+     *         name: n
+     *         description: The number of measurements to return.
+     *         schema:
+     *           type: integer
+     *         example: 50
+     *         required: false
+     *         default: 200
+     *         minimum: 1
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: array
+     *                 description: Array of key-value-pairs, with the key being the timestamp and the value the measured value.
+     *                 minItems: 2
+     *                 maxItems: 2
+     *                 items:
+     *                   example:
+     *                     - 2022-06-09T13:30:01.272+00:00
+     *                     - 52
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/humidity/timeseries/:id", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
@@ -405,7 +489,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                 properties:
      *                   id:
      *                     type: string
-     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     description: The unique sensor id. Format depends on the origin of the sensor.
      *                     example: "sensor-001"
      *                   category:
      *                     type: string
@@ -448,6 +532,49 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
+    /**
+     * @swagger
+     * /weather/rain/timeseries/{id}:
+     *   get:
+     *     summary: Gets the specified number of a sensor's most recent measurements.
+     *     tags:
+     *       - weather
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         description: The unique sensor id. Format depends on the origin of the sensor.
+     *         schema:
+     *           type: string
+     *         example: sensor-001
+     *         required: true
+     *       - in: query
+     *         name: n
+     *         description: The number of measurements to return.
+     *         schema:
+     *           type: integer
+     *         example: 50
+     *         required: false
+     *         default: 200
+     *         minimum: 1
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: array
+     *                 description: Array of key-value-pairs, with the key being the timestamp and the value the measured value.
+     *                 minItems: 2
+     *                 maxItems: 2
+     *                 items:
+     *                   example:
+     *                     - 2022-06-09T13:30:01.272+00:00
+     *                     - 0.68
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/rain/timeseries/:id", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
