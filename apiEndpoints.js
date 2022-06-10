@@ -1,6 +1,6 @@
 const requestHandler = require("./requestHandler");
 
-module.exports.setup = (app, dbConnection) => {
+module.exports.setup = (app, dbConnection, sensorInfo) => {
 
     /**
      * @swagger
@@ -22,7 +22,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
     app.get("/buildings/tilesInfo", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -54,7 +54,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
     app.get("/buildings", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -85,7 +85,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
      app.get("/buildings/attributes", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -117,7 +117,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
     app.get("/terrain/dem/:resolution", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -149,7 +149,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
     app.get("/sewers/shafts", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -181,7 +181,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
      app.get("/sewers/shafts/attributes", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -212,7 +212,7 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
      app.get("/sewers/pipes", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     /**
@@ -244,11 +244,38 @@ module.exports.setup = (app, dbConnection) => {
      *         description: Not found
      */
      app.get("/sewers/pipes/attributes", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
     // TODO document
     app.get("/metrostation/pointcloud", (req, res) => {
-        return requestHandler.handle(req, res, dbConnection);
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
+    });
+
+    // Gets the most recent temperature measurement from all applicable sensors.
+    // Params: ids | The ids of the sensors to query.
+    app.get("/weather/temperature", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+    // Gets the last n measurements of the specified sensor
+    app.get("/weather/temperature/timeseries/:id", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+    app.get("/weather/humidity", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+    app.get("/weather/humidity/timeseries/:id", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+    app.get("/weather/rain", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+    app.get("/weather/rain/timeseries/:id", (req, res) => {
+        return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 };

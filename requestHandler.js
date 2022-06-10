@@ -2,24 +2,25 @@ const MongoDB = require("mongodb");
 const MultiStream = require('multistream')
 const path = require("path");
 const fs = require("fs");
+const axios = require('axios').default;
 
 const dbName = "DigitalerZwillingHerne" // TODO put in config file
 
 // This file is responsible for handling the requests and communicating with the database.
 // This logic is outsourced here to keep the apiEndpoints file as concise as possible.
 
-module.exports.handle = (req, res, dbConnection) => {
+module.exports.handle = (req, res, params) => {
     const path = req.route.path;
     // Get the handler function depending on path
     // mapEndpointToHandlerFunction is defined at the bottom of this file
     let handler = mapEndpointToHandlerFunction[path];
-    return handler(req, res, dbConnection);
+    return handler(req, res, params);
 }
 
 
-let getBuildingTilesInfo = (req, res, dbConnection) => {
+let getBuildingTilesInfo = (req, res, params) => {
     res.setHeader("Content-Type", "application/json");
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("buildings.tileInfo");
@@ -33,10 +34,10 @@ let getBuildingTilesInfo = (req, res, dbConnection) => {
 }
 
 
-let getBuildings = (req, res, dbConnection) => {
+let getBuildings = (req, res, params) => {
     const ids = req.query.ids;
 
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then(client => {
         let db = client.db(dbName);
         const bucket = new MongoDB.GridFSBucket(db, { bucketName: 'buildings' });
@@ -75,9 +76,9 @@ let getBuildings = (req, res, dbConnection) => {
 }
 
 
-let getBuildingAttributes = (req, res, dbConnection) => {
+let getBuildingAttributes = (req, res, params) => {
     const ids = req.query.ids;
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then(client => {
         let db = client.db(dbName);
         let collection = db.collection("buildings.attributes")
@@ -106,9 +107,9 @@ let getBuildingAttributes = (req, res, dbConnection) => {
 }
 
 
-let getSewerShafts = (req, res, dbConnection) => {
+let getSewerShafts = (req, res, params) => {
     const ids = req.query.ids;
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.shafts");
@@ -117,9 +118,9 @@ let getSewerShafts = (req, res, dbConnection) => {
 }
 
 
-let getSewerPipes = (req, res, dbConnection) => {
+let getSewerPipes = (req, res, params) => {
     const ids = req.query.ids;
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.pipes");
@@ -127,9 +128,9 @@ let getSewerPipes = (req, res, dbConnection) => {
     });
 }
 
-let getSewerShaftsAttributes = (req, res, dbConnection) => {
+let getSewerShaftsAttributes = (req, res, params) => {
     const ids = req.query.ids;
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.shafts");
@@ -137,9 +138,9 @@ let getSewerShaftsAttributes = (req, res, dbConnection) => {
     });
 }
 
-let getSewerPipesAttributes = (req, res, dbConnection) => {
+let getSewerPipesAttributes = (req, res, params) => {
     const ids = req.query.ids;
-    const connect = dbConnection;
+    const connect = params.dbConnection;
     connect.then((client) => {
         let db = client.db(dbName);
         let collection = db.collection("sewers.pipes");
@@ -147,7 +148,7 @@ let getSewerPipesAttributes = (req, res, dbConnection) => {
     });
 }
 
-let getMetroPointcloud = (req, res, dbConnection) => {
+let getMetroPointcloud = (req, res, params) => {
     let filepath = path.join(__dirname, "data", "metrostationPointcloud", "tileset.json")
     if(checkFileExistsSync(filepath)) {
         res.setHeader("Content-Type", "application/json");
@@ -157,6 +158,101 @@ let getMetroPointcloud = (req, res, dbConnection) => {
     }
 }
 
+
+let getSensorMeasurement = (req, res, params) => {
+    let endpoint = req.originalUrl.split("/").at(-1);
+    let sensors = params.sensorInfo[endpoint];
+    let promises = [];
+    for(let [id, sensor] of sensors) {
+        // The structure returned by the request depends on the sensor category
+        // For now we query each sensor individually
+        // (this could be improved if the sensor's API provides a method to query multiple sensors at once)
+        let category = sensor["category"];
+        let requestParams = {};
+        if(category === "fiware") {
+            requestParams.headers = {
+                "fiware-service": "hsbokanal",
+                "fiware-servicepath": "/"
+            }
+        }
+        let promise = axios.get(sensor["url"], requestParams);
+        promises.push(promise);
+    }
+    Promise.all(promises)
+        .then( (results) => {
+            let responseArr = [];
+            for(let result of results) {
+                let json = result.data;
+                let template = createSensorResponseTemplate();
+                let category = sensors.get(json.id).category;
+                // Map the response to the data structure we want to return, depending on sensor category
+                if(category === "fiware") {
+                    template.id = json.id;
+                    template.category = "fiware";
+                    template.position.lon = parseFloat(json.long.value);
+                    template.position.lat = parseFloat(json.lat.value);
+                    template.measurement.value = json[endpoint].value
+                    template.measurement.time = json[endpoint].metadata.TimeInstant.value;
+                } else {
+                    console.error("Could not find an appropriate mapping for sensor: ", json.id);
+                    res.sendStatus(500);
+                }
+                // Maybe other categories here later
+
+                responseArr.push(template);
+            }
+            res.send(responseArr);
+        })
+        .catch( (e) => {
+            console.error(e)
+            res.sendStatus(500);
+        });
+}
+
+
+let getSensorTimeseriesMeasurement = (req, res, params) => {
+    let endpoint = req.originalUrl.split("/").at(-3);
+    let sensorId = req.params.id;
+    let numberOfMeasurements = req.query.n;
+    let sensor = params.sensorInfo[endpoint].get(sensorId);
+    let category = sensor["category"];
+    let requestParams = {};
+    let url;
+    if(category === "fiware") {
+        url = sensor.timeseries.url;
+        url += endpoint + "?lastN=" + numberOfMeasurements
+        requestParams.headers = {
+            "fiware-service": "hsbokanal",
+            "fiware-servicepath": "/"
+        }
+    }
+    axios.get(url, requestParams)
+        .then( result => {
+            res.send(result.data)
+        })
+        .catch( (e) => {
+            console.error(e)
+            res.sendStatus(500);
+        });
+}
+
+// This is the structure we want to return for sensor measurements
+function createSensorResponseTemplate() {
+    return {
+        id: "",
+        category: "",
+        position: {
+            lon: null,
+            lat: null,
+            altitude: null,
+        },
+        measurement: {
+            value: null,
+            unit: "",
+            time: ""
+        }
+    }
+}
 
 function wrapInFeatureCollection(features) {
     features = features.substring(1); // remove opening array bracket;
@@ -274,4 +370,10 @@ const mapEndpointToHandlerFunction = {
     "/sewers/pipes": getSewerPipes,
     "/sewers/pipes/attributes": getSewerPipesAttributes,
     "/metrostation/pointcloud": getMetroPointcloud,
+    "/weather/temperature": getSensorMeasurement,
+    "/weather/temperature/timeseries/:id": getSensorTimeseriesMeasurement,
+    "/weather/humidity": getSensorMeasurement,
+    "/weather/humidity/timeseries/:id": getSensorTimeseriesMeasurement,
+    "/weather/rain": getSensorMeasurement,
+    "/weather/rain/timeseries/:id": getSensorTimeseriesMeasurement
 }
