@@ -252,8 +252,65 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
-    // Gets the most recent temperature measurement from all applicable sensors.
-    // Params: ids | The ids of the sensors to query.
+
+    /**
+     * @swagger
+     * /weather/temperature:
+     *   get:
+     *     summary: Gets the most recent temperature measurement from all applicable sensors.
+     *     tags:
+     *       - weather
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     example: "sensor-001"
+     *                   category:
+     *                     type: string
+     *                     description: "The sensor category"
+     *                     example: "fiware"
+     *                   position:
+     *                     type: object
+     *                     properties:
+     *                       lon:
+     *                         type: number
+     *                         description: longitude
+     *                         example: 7.123
+     *                       lat:
+     *                         type: number
+     *                         description: latitude
+     *                         example: 52.456
+     *                       altitude:
+     *                         type: number
+     *                         description: height
+     *                         example: 107.5
+     *                   measurement:
+     *                     type: object
+     *                     properties:
+     *                       value:
+     *                         type: number
+     *                         description: The sensor's measurement (temperature)
+     *                         example: 20.5
+     *                       unit:
+     *                         type: string
+     *                         description: The measurements unit
+     *                         example: °C
+     *                       time:
+     *                         type: string
+     *                         description: The timestamp when the value was measured
+     *                         example: 2022-06-10T12:00:01.080Z
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/temperature", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
@@ -263,6 +320,64 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
+    /**
+     * @swagger
+     * /weather/humidity:
+     *   get:
+     *     summary: Gets the most recent humidity measurement from all applicable sensors.
+     *     tags:
+     *       - weather
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     example: "sensor-001"
+     *                   category:
+     *                     type: string
+     *                     description: "The sensor category"
+     *                     example: "fiware"
+     *                   position:
+     *                     type: object
+     *                     properties:
+     *                       lon:
+     *                         type: number
+     *                         description: longitude
+     *                         example: 7.123
+     *                       lat:
+     *                         type: number
+     *                         description: latitude
+     *                         example: 52.456
+     *                       altitude:
+     *                         type: number
+     *                         description: height
+     *                         example: 107.5
+     *                   measurement:
+     *                     type: object
+     *                     properties:
+     *                       value:
+     *                         type: integer
+     *                         description: The sensor's measurement (humidity)
+     *                         example: 60
+     *                       unit:
+     *                         type: string
+     *                         description: The measurements unit
+     *                         example: %
+     *                       time:
+     *                         type: string
+     *                         description: The timestamp when the value was measured
+     *                         example: 2022-06-10T12:00:01.080Z
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/humidity", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
@@ -271,6 +386,64 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
+    /**
+     * @swagger
+     * /weather/rain:
+     *   get:
+     *     summary: Gets the most recent rain measurement from all applicable sensors.
+     *     tags:
+     *       - weather
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     description: "The unique sensor id. Format depends on the origin of the sensor."
+     *                     example: "sensor-001"
+     *                   category:
+     *                     type: string
+     *                     description: "The sensor category"
+     *                     example: "fiware"
+     *                   position:
+     *                     type: object
+     *                     properties:
+     *                       lon:
+     *                         type: number
+     *                         description: longitude
+     *                         example: 7.123
+     *                       lat:
+     *                         type: number
+     *                         description: latitude
+     *                         example: 52.456
+     *                       altitude:
+     *                         type: number
+     *                         description: height
+     *                         example: 107.5
+     *                   measurement:
+     *                     type: object
+     *                     properties:
+     *                       value:
+     *                         type: integer
+     *                         description: The sensor's measurement (humidity)
+     *                         example: 0.2
+     *                       unit:
+     *                         type: string
+     *                         description: The measurements unit
+     *                         example: l/m²
+     *                       time:
+     *                         type: string
+     *                         description: The timestamp when the value was measured
+     *                         example: 2022-06-10T12:00:01.080Z
+     *       404:
+     *         description: Not found
+     */
     app.get("/weather/rain", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
