@@ -184,18 +184,39 @@ let getSensorMeasurement = (req, res, params) => {
             for(let result of results) {
                 let json = result.data;
                 let template = createSensorResponseTemplate();
-                let category = sensors.get(json.id).category;
+                let sensor = sensors.get(json.id);
+                let category = sensor.category;
+                let additionalMeasurements = sensor.typeOfMeasurement.filter( entry => {
+                    // TODO Quick fix for now
+                    if(endpoint === "precipitation") {
+                        return entry !== "rain";
+                    } else {
+                        return entry !== endpoint;
+                    }
+                })
                 // Map the response to the data structure we want to return, depending on sensor category
                 if(category === "fiware") {
                     template.id = json.id;
                     template.category = "fiware";
                     template.position.lon = parseFloat(json.long.value);
                     template.position.lat = parseFloat(json.lat.value);
-                    template.measurement.value = parseFloat(json[endpoint].value);
+                    // TODO Quick fix for now
+                    if(endpoint === "precipitation") {
+                        template.measurement.value = parseFloat(json["rain"].value);
+                    } else {
+                        template.measurement.value = parseFloat(json[endpoint].value);
+                    }
+                    
                     if(endpoint === "temperature") template.measurement.unit = "°C";
                     if(endpoint === "humidity") template.measurement.unit = "%";
-                    if(endpoint === "rain") template.measurement.unit = "l/m²";
-                    template.measurement.time = json[endpoint].metadata.TimeInstant.value;
+                    if(endpoint === "precipitation") template.measurement.unit = "l/m²";
+                    // TODO Quick fix for now
+                    if(endpoint === "precipitation") {
+                        template.measurement.time = json["rain"].metadata.TimeInstant.value;
+                    } else {
+                        template.measurement.time = json[endpoint].metadata.TimeInstant.value;
+                    }
+                    template.additionalMeasurements = additionalMeasurements;
                 } else {
                     console.error("Could not find an appropriate mapping for sensor: ", json.id);
                     res.sendStatus(500);
@@ -225,7 +246,13 @@ let getSensorTimeseriesMeasurement = (req, res, params) => {
     let url;
     if(category === "fiware") {
         url = sensor.timeseries.url;
-        url += endpoint + "?lastN=" + numberOfMeasurements
+        // TODO Quick fix for now
+        if(endpoint === "precipitation") {
+            url += "rain" + "?lastN=" + numberOfMeasurements
+        } else {
+            url += endpoint + "?lastN=" + numberOfMeasurements
+        }
+        
         requestParams.headers = {
             "fiware-service": "hsbokanal",
             "fiware-servicepath": "/"
@@ -267,7 +294,8 @@ function createSensorResponseTemplate() {
             value: null,
             unit: "",
             time: ""
-        }
+        },
+        additionalMeasurements: []
     }
 }
 
@@ -391,6 +419,6 @@ const mapEndpointToHandlerFunction = {
     "/weather/temperature/timeseries/:id": getSensorTimeseriesMeasurement,
     "/weather/humidity": getSensorMeasurement,
     "/weather/humidity/timeseries/:id": getSensorTimeseriesMeasurement,
-    "/weather/rain": getSensorMeasurement,
-    "/weather/rain/timeseries/:id": getSensorTimeseriesMeasurement
+    "/weather/precipitation": getSensorMeasurement,
+    "/weather/precipitation/timeseries/:id": getSensorTimeseriesMeasurement
 }

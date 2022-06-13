@@ -106,8 +106,13 @@ function readSensorInfo(pathToSensorInfo) {
     let result = {};
     // Create a property for each typeOfMeasurement, listing the applicable sensors
     for(let sensor of obj.sensors) {
-        // TODO This is where we could simplify or "map" the typeOfMeasurement to our endpoints if needed
+        // This is where we could simplify or "map" the typeOfMeasurement to our endpoints if needed
         for(let type of sensor.typeOfMeasurement) {
+            // TODO export this mapping into a separate file once it gets more complicated
+            // Structure like: { precipitation: ["rain", "drizzle", "rainfall", ...], ... }
+            if(type === "rain") {
+                type = "precipitation"
+            }
             if(!result[type]) {
                 result[type] = new Map();
             }

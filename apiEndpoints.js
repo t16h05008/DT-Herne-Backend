@@ -92,7 +92,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      * @swagger
      * /terrain/dem/{resolution}:
      *   get:
-     *     summary: Gets a json document, that contains information about the format and file structure the terrain is stored in
+     *     summary: Gets a json document, that contains information about the format and file structure the terrain is stored in.
      *     description: Clients can use the information in this document to directly request terrain files from the server's file system.<br />
      *                  Subsequent requests follow the schema <b>http://server:port/terrain/dem/resolution/z/x/y.terrain</b><br />
      *                  They could look like <b>http://localhost:8000/terrain/dem/25/3/8/6.terrain</b>
@@ -306,6 +306,14 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
+     *                  additionalMeasurements:
+     *                      type: array
+     *                      description: The measurements this sensor can provide besides the queried endpoint.
+     *                      items:
+     *                          type: string
+     *                          example:
+     *                              - humidity
+     *                              - rain
      *       404:
      *         description: Not found
      */
@@ -317,7 +325,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      * @swagger
      * /weather/temperature/timeseries/{id}:
      *   get:
-     *     summary: Gets the last N measurements of the specified sensor
+     *     summary: Gets the last N measurements of the specified sensor.
      *     tags:
      *       - weather
      *     parameters:
@@ -415,6 +423,14 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
+     *                  additionalMeasurements:
+     *                      type: array
+     *                      description: The measurements this sensor can provide besides the queried endpoint.
+     *                      items:
+     *                          type: string
+     *                          example:
+     *                              - temperature
+     *                              - rain
      *       404:
      *         description: Not found
      */
@@ -427,7 +443,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      * @swagger
      * /weather/humidity/timeseries/{id}:
      *   get:
-     *     summary: Gets the last N measurements of the specified sensor
+     *     summary: Gets the last N measurements of the specified sensor.
      *     tags:
      *       - weather
      *     parameters:
@@ -472,7 +488,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
 
     /**
      * @swagger
-     * /weather/rain:
+     * /weather/precipitation:
      *   get:
      *     summary: Gets the most recent rain measurement from all applicable sensors.
      *     tags:
@@ -525,16 +541,24 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
+     *                  additionalMeasurements:
+     *                      type: array
+     *                      description: The measurements this sensor can provide besides the queried endpoint.
+     *                      items:
+     *                          type: string
+     *                          example:
+     *                              - temperature
+     *                              - humidity
      *       404:
      *         description: Not found
      */
-    app.get("/weather/rain", (req, res) => {
+    app.get("/weather/precipitation", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 
     /**
      * @swagger
-     * /weather/rain/timeseries/{id}:
+     * /weather/precipitation/timeseries/{id}:
      *   get:
      *     summary: Gets the specified number of a sensor's most recent measurements.
      *     tags:
@@ -575,7 +599,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *       404:
      *         description: Not found
      */
-    app.get("/weather/rain/timeseries/:id", (req, res) => {
+    app.get("/weather/precipitation/timeseries/:id", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
     });
 };
