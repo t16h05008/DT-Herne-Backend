@@ -3,8 +3,9 @@ const MultiStream = require('multistream')
 const path = require("path");
 const fs = require("fs");
 const axios = require('axios').default;
+require('dotenv').config()
 
-const dbName = "DigitalerZwillingHerne" // TODO put in config file
+const dbName = process.env.DB_NAME;
 
 // This file is responsible for handling the requests and communicating with the database.
 // This logic is outsourced here to keep the apiEndpoints file as concise as possible.

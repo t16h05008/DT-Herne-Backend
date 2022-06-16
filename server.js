@@ -5,12 +5,14 @@ const MongoDB = require("mongodb");
 const cors = require('cors');
 const fs = require('fs');
 const apiEndpoints = require("./apiEndpoints");
+require('dotenv').config()
 
 const app = express();
-const port = 8000;
-const pathToSensorInfo = "./sensorInfo.json"
-const pathToDatabase = "mongodb://localhost:27017" // TODO For development, has to be replaced later
 app.use(cors());
+
+const port = process.env.PORT;
+const pathToSensorInfo = process.env.PATH_TO_SENSOR_INFO;
+const pathToDatabase = process.env.MONGODB_URI || 'mongodb://localhost:27017' // TODO For development, has to be replaced later
 
 let dbConnection;
 
