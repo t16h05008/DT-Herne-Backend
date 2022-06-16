@@ -306,14 +306,14 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
-     *                  additionalMeasurements:
-     *                      type: array
-     *                      description: The measurements this sensor can provide besides the queried endpoint.
-     *                      items:
-     *                          type: string
-     *                          example:
-     *                              - humidity
-     *                              - rain
+     *                   additionalMeasurements:
+     *                     type: array
+     *                     description: The measurements this sensor can provide besides the queried endpoint.
+     *                     items:
+     *                       type: string
+     *                       example:
+     *                         - temperature
+     *                         - humidity
      *       404:
      *         description: Not found
      */
@@ -423,14 +423,14 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
-     *                  additionalMeasurements:
-     *                      type: array
-     *                      description: The measurements this sensor can provide besides the queried endpoint.
-     *                      items:
-     *                          type: string
-     *                          example:
-     *                              - temperature
-     *                              - rain
+     *                   additionalMeasurements:
+     *                     type: array
+     *                     description: The measurements this sensor can provide besides the queried endpoint.
+     *                     items:
+     *                       type: string
+     *                       example:
+     *                         - temperature
+     *                         - humidity
      *       404:
      *         description: Not found
      */
@@ -541,14 +541,14 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      *                         type: string
      *                         description: The timestamp when the value was measured
      *                         example: 2022-06-10T12:00:01.080Z
-     *                  additionalMeasurements:
-     *                      type: array
-     *                      description: The measurements this sensor can provide besides the queried endpoint.
-     *                      items:
-     *                          type: string
-     *                          example:
-     *                              - temperature
-     *                              - humidity
+     *                   additionalMeasurements:
+     *                     type: array
+     *                     description: The measurements this sensor can provide besides the queried endpoint.
+     *                     items:
+     *                       type: string
+     *                       example:
+     *                         - temperature
+     *                         - humidity
      *       404:
      *         description: Not found
      */
