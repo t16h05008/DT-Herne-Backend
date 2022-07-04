@@ -373,7 +373,7 @@ function getSewerFeatures(collection, ids, res) {
         projection["properties.Sohlhöhe [m]"] = 1
     }
     if(collection.collectionName.includes("pipes")) {
-        projection["properties.Durchmesser [mm]"] = 1
+        projection["properties.Profilbreite [mm]"] = 1
     }
 
     collection.find(query).project(projection).toArray(function(err, result) {

@@ -62,6 +62,7 @@ const expressStaticOptionsDEM = {
         }
     }
 }
+
 app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', expressStaticOptionsDEM));
 app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', expressStaticOptionsDEM));
 app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', expressStaticOptionsDEM));
