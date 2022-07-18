@@ -12,7 +12,7 @@ app.use(cors());
 
 const port = process.env.PORT;
 const pathToSensorInfo = process.env.PATH_TO_SENSOR_INFO;
-const pathToDatabase = process.env.MONGODB_URI || 'mongodb://localhost:27017' // TODO For development, has to be replaced later
+const pathToDatabase = process.env.MONGODB_URI || 'mongodb://localhost:27017'
 
 let dbConnection;
 
@@ -51,8 +51,7 @@ const swaggerUiOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
 
-// Expose the dem file structure
-const expressStaticOptionsDEM = {
+const options = {
     setHeaders: function(res, path) {
         // Set header according to path
         if(path.endsWith(".json")) {
@@ -62,12 +61,12 @@ const expressStaticOptionsDEM = {
         }
     }
 }
-
-app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', expressStaticOptionsDEM));
-app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', expressStaticOptionsDEM));
-app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', expressStaticOptionsDEM));
-app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', expressStaticOptionsDEM));
-app.use("/metrostation/pointcloud", express.static(__dirname + "/data/metrostationPointcloud"));
+// Expose the dem file structure
+app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', options));
+app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', options));
+app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', options));
+app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', options));
+app.use("/metrostation/pointcloud", express.static(__dirname + "/data/metroPc"));
 
 app.listen(port, async () => {
     await connectToMongoDB();
@@ -75,8 +74,6 @@ app.listen(port, async () => {
     apiEndpoints.setup(app, dbConnection, sensorInfo);
     console.log("Server ready");
 });
-
-
 
 function connectToMongoDB() {
     return new Promise( (resolve, reject) => {
@@ -120,7 +117,7 @@ function readSensorInfo(pathToSensorInfo) {
                 result[type] = new Map();
             }
             // We assume that the sensor id is unique here, even across different sensor categories
-            // But this allows us to find the sensor in o(1)
+            // But this allows us to find the sensor in O(1)
             result[type].set(sensor.id, sensor); 
         }
     }

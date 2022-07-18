@@ -245,7 +245,24 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
-    // TODO document
+    /**
+     * @swagger
+     * /metrostation/pointcloud:
+     *   get:
+     *     summary: Gets the json document in the root folder of a 3dTiles dataset.
+     *     description: Clients can use the information in this document to directly request tiles from the server's file system.
+     *     tags:
+     *       - transport
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
     app.get("/metrostation/pointcloud", (req, res) => {
         return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });

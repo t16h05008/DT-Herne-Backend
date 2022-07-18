@@ -54,7 +54,7 @@ let getBuildings = (req, res, params) => {
         bucket.find(query).toArray( function(err, result) {
             if(err) throw err;
             if(!result.length) {
-                res.sendStatus(404); // If none of the ids were found. Of some are missing, they are ignored.
+                res.sendStatus(404);
                 return;
             } else {
                 // Get the 3D-models
@@ -150,7 +150,7 @@ let getSewerPipesAttributes = (req, res, params) => {
 }
 
 let getMetroPointcloud = (req, res, params) => {
-    let filepath = path.join(__dirname, "data", "metrostationPointcloud", "tileset.json")
+    let filepath = path.join(__dirname, "data", "metroPc", "tileset.json")
     if(checkFileExistsSync(filepath)) {
         res.setHeader("Content-Type", "application/json");
         res.sendFile(filepath);
