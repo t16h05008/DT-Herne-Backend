@@ -17,7 +17,7 @@ RUN npm ci
 COPY . .
 
 # Server will run under this port in the container
-EXPOSE 8000
+EXPOSE 8000 27017
 
 # Command to run within the container
-CMD ["npm","run","startNodemon"]
+CMD ["npm", "start"]

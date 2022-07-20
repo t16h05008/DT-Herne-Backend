@@ -3,24 +3,27 @@ services:
   backend:
     container_name: backend
     restart: always
-    build: .
+    build: . # Use the dockerfile in the current dirctory to build
     ports:
-      - 8000:8000
+      - 8000:8000 # Map conatiner port 8000 to host os port 8000
+    # Set some environment variables
     environment:
       PORT: 8000
       MONGODB_URI: mongodb://mongoDB:27017
       DB_NAME: DigitalerZwillingHerne
     volumes:
+      # Add the current directory as a volume in /app.
+      # That way changes are persisted when the conatiner shuts down.
       - .:/app
     depends_on:
-      - mongo
+      - mongo # Has to match the line below
   mongo:
     container_name: "mongoDB"
-    image: mongo:4.4.5
+    image: mongo:4.4.5 # The official mongodb image
     restart: always
     ports:
-      - 27017:27017
+      - 27017:27017 # Mapping of database port
     volumes:
-      - mongodb:/data/db
+      - mongodb:/data/db # Path inside the container where the database data can be found
 volumes:
   mongodb: {}
