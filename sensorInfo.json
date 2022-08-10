@@ -1,0 +1,14 @@
+{
+  "sensors": [
+    {
+      "id": "urn:ngsi-ld:weather:001",
+      "category": "fiware",
+      "url": "http://193.175.84.40:15000/v2/entities/urn:ngsi-ld:weather:001",
+      "timeseries": {
+        "url": "http://193.175.84.40:15001/v2/entities/urn:ngsi-ld:weather:001/attrs/"
+      },
+      "typeOfMeasurement": ["temperature", "humidity", "rain"]
+    }
+  ]
+}
+
