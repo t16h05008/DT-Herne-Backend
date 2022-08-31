@@ -72,7 +72,7 @@ app.listen(port, async () => {
     await connectToMongoDB();
     let sensorInfo = readSensorInfo(pathToSensorInfo);
     apiEndpoints.setup(app, dbConnection, sensorInfo);
-    console.log("Server ready");
+    console.log("Server listening on port " + port);
 });
 
 function connectToMongoDB() {
