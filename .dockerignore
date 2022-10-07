@@ -2,4 +2,4 @@
 Dockerfile
 .dockerignore
 docker-compose.yml
-./data/noDataToMeanTest
+./data/*
