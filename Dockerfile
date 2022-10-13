@@ -16,8 +16,5 @@ RUN npm ci
 # Copy the source code into the container dir ("." means current directory)
 COPY . .
 
-# Server will run under this port in the container
-EXPOSE 8000
-
 # Command to run within the container
 CMD ["npm", "start"]
