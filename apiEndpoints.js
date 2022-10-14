@@ -88,6 +88,29 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
+        /**
+     * @swagger
+     * /terrain/3dmesh:
+     *   get:
+     *     summary: Gets a json document, that contains information about the format and file structure the 3d mesh is stored in.
+     *     description: Clients can use the information in this document to directly request the mesh files from the server's file system.<br />
+     *                  The mesh is stored in 3D-tile structure.
+     *     tags:
+     *       - terrain
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
+         app.get("/terrain/3dmesh", (req, res) => {
+            return requestHandler.handle(req, res, {dbConnection: dbConnection});
+        });
+
     /**
      * @swagger
      * /terrain/dem/{resolution}:
