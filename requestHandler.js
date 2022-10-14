@@ -325,6 +325,20 @@ function handleDemRequest(req, res) {
     }
 }
 
+function handle3dMeshRequest(req, res) {
+    // Get the tileset.json that corresponds to the requested resolution and return it.
+    // The client can do subsequent requests directly on the folder structure in the directory.
+    let filepath = path.join(__dirname, "data", "terrain", "tileset.json")
+    if(checkFileExistsSync(filepath)) {
+        res.setHeader("Content-Type", "application/json");
+        res.sendFile(filepath);
+    } else {
+        res.sendStatus(404);
+    }
+}
+
+
+
 
 function getSewerAttributes(collection, ids, res) {
     let projection = { _id: 0 } // Don't return internal id
@@ -411,6 +425,7 @@ const mapEndpointToHandlerFunction = {
     "/buildings/tilesInfo": getBuildingTilesInfo,
     "/buildings/attributes": getBuildingAttributes,
     "/terrain/dem/:resolution":  handleDemRequest,
+    "/terrain/3dmesh":  handle3dMeshRequest,
     "/sewers/shafts": getSewerShafts,
     "/sewers/shafts/attributes": getSewerShaftsAttributes,
     "/sewers/pipes": getSewerPipes,

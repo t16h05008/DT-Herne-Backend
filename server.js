@@ -61,12 +61,15 @@ const options = {
         }
     }
 }
-// Expose the dem file structure
+
 app.use("/terrain/dem/1", express.static(__dirname + '/data/terrain1', options));
 app.use("/terrain/dem/10", express.static(__dirname + '/data/terrain10', options));
 app.use("/terrain/dem/25", express.static(__dirname + '/data/terrain25', options));
 app.use("/terrain/dem/50", express.static(__dirname + '/data/terrain50', options));
+
+app.use("/terrain/3dmesh", express.static(__dirname + '/data/3dmesh'));
 app.use("/metrostation/pointcloud", express.static(__dirname + "/data/metroPc"));
+
 
 app.listen(port, async () => {
     await connectToMongoDB();
