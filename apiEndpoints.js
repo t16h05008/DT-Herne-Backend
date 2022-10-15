@@ -88,7 +88,7 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
         return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 
-        /**
+    /**
      * @swagger
      * /terrain/3dmesh:
      *   get:
@@ -641,5 +641,27 @@ module.exports.setup = (app, dbConnection, sensorInfo) => {
      */
     app.get("/weather/precipitation/timeseries/:id", (req, res) => {
         return requestHandler.handle(req, res, {sensorInfo: sensorInfo});
+    });
+
+
+    /**
+     * @swagger
+     * /images/360deg/locations:
+     *   get:
+     *     summary: Gets a geojson document, that contains the image locations and additional metadata, like descriptions shown in the image.
+     *     tags:
+     *       - images
+     *     responses:
+     *       200:
+     *         description: Ok
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *       404:
+     *         description: Not found
+     */
+     app.get("/images/360deg/locations", (req, res) => {
+        return requestHandler.handle(req, res, {dbConnection: dbConnection});
     });
 };

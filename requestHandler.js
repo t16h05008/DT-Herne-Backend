@@ -337,7 +337,22 @@ function handle3dMeshRequest(req, res) {
     }
 }
 
-
+let get360ImageLocations = (req, res, params) => {
+    const connect = params.dbConnection;
+    connect.then((client) => {
+        let db = client.db(dbName);
+        let collection = db.collection("images.360deg.locations");
+        collection.find({}).toArray(function(err, result) {
+            if(err) {
+                console.err(err)
+                res.sendStatus(500);
+                return;
+            }
+            res.setHeader("Content-Type", "application/json");
+            res.send(wrapInFeatureCollection( JSON.stringify(result) ));
+        });
+    });
+}
 
 
 function getSewerAttributes(collection, ids, res) {
@@ -424,13 +439,14 @@ const mapEndpointToHandlerFunction = {
     "/buildings": getBuildings,
     "/buildings/tilesInfo": getBuildingTilesInfo,
     "/buildings/attributes": getBuildingAttributes,
-    "/terrain/dem/:resolution":  handleDemRequest,
-    "/terrain/3dmesh":  handle3dMeshRequest,
+    "/images/360deg/locations": get360ImageLocations,
+    "/metrostation/pointcloud": getMetroPointcloud,
     "/sewers/shafts": getSewerShafts,
     "/sewers/shafts/attributes": getSewerShaftsAttributes,
     "/sewers/pipes": getSewerPipes,
     "/sewers/pipes/attributes": getSewerPipesAttributes,
-    "/metrostation/pointcloud": getMetroPointcloud,
+    "/terrain/dem/:resolution":  handleDemRequest,
+    "/terrain/3dmesh":  handle3dMeshRequest,
     "/weather/temperature": getSensorMeasurement,
     "/weather/temperature/timeseries/:id": getSensorTimeseriesMeasurement,
     "/weather/humidity": getSensorMeasurement,
