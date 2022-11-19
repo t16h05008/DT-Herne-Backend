@@ -326,9 +326,7 @@ function handleDemRequest(req, res) {
 }
 
 function handle3dMeshRequest(req, res) {
-    // Get the tileset.json that corresponds to the requested resolution and return it.
-    // The client can do subsequent requests directly on the folder structure in the directory.
-    let filepath = path.join(__dirname, "data", "terrain", "tileset.json")
+    let filepath = path.join(__dirname, "data", "3dMesh", "tileset.json")
     if(checkFileExistsSync(filepath)) {
         res.setHeader("Content-Type", "application/json");
         res.sendFile(filepath);
