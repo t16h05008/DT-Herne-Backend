@@ -108,47 +108,6 @@ let getBuildingAttributes = (req, res, params) => {
 }
 
 
-let getSewerShafts = (req, res, params) => {
-    const ids = req.query.ids;
-    const connect = params.dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts");
-        return getSewerFeatures(collection, ids, res)
-    });
-}
-
-
-let getSewerPipes = (req, res, params) => {
-    const ids = req.query.ids;
-    const connect = params.dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.pipes");
-        return getSewerFeatures(collection, ids, res)
-    });
-}
-
-let getSewerShaftsAttributes = (req, res, params) => {
-    const ids = req.query.ids;
-    const connect = params.dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.shafts");
-        return getSewerAttributes(collection, ids, res)
-    });
-}
-
-let getSewerPipesAttributes = (req, res, params) => {
-    const ids = req.query.ids;
-    const connect = params.dbConnection;
-    connect.then((client) => {
-        let db = client.db(dbName);
-        let collection = db.collection("sewers.pipes");
-        return getSewerAttributes(collection, ids, res)
-    });
-}
-
 let getMetroPointcloud = (req, res, params) => {
     let filepath = path.join(__dirname, "data", "metroPc", "tileset.json")
     if(checkFileExistsSync(filepath)) {
@@ -353,72 +312,6 @@ let get360ImageLocations = (req, res, params) => {
 }
 
 
-function getSewerAttributes(collection, ids, res) {
-    let projection = { _id: 0 } // Don't return internal id
-    if(!ids) {
-        query = {} // Return all documents
-    } else {
-        let idsArr = ids.split(",");
-        idsArr = idsArr.map( id => parseInt(id));
-        query = { "properties.id": { $in: idsArr } }
-    }
-    collection.find(query).project(projection).toArray(function(err, result) {
-        if(err) {
-            console.err(err)
-            res.sendStatus(500);
-            return;
-        }
-        if(result.length === 0) {
-            res.sendStatus(404);
-            return;
-        }
-        res.setHeader("Content-Type", "application/json");
-        res.send(result);
-    });
-}
-
-
-function getSewerFeatures(collection, ids, res) {
-    let query;
-    if(!ids) {
-        query = {}; // Return all documents
-    } else {
-        let idsArr = ids.split(",");
-        idsArr = idsArr.map( id => parseInt(id));
-        query = { "properties.id": { $in: idsArr } }
-    }
-    // Only return the properties, that are relevant for visualization
-    let projection = {
-        "_id": 0,
-        "type": 1,
-        "properties.id": 1,
-        "properties.Farbe": 1,
-        "geometry": 1
-    }
-    if(collection.collectionName.includes("shafts")) {
-        projection["properties.Deckelhöhe [m]"] = 1
-        projection["properties.Sohlhöhe [m]"] = 1
-    }
-    if(collection.collectionName.includes("pipes")) {
-        projection["properties.Profilbreite [mm]"] = 1
-    }
-
-    collection.find(query).project(projection).toArray(function(err, result) {
-        if(err) {
-            console.err(err)
-            res.sendStatus(500);
-            return;
-        }
-        if(result.length === 0) {
-            res.sendStatus(404);
-            return;
-        }
-        res.setHeader("Content-Type", "application/json");
-        res.send(wrapInFeatureCollection( JSON.stringify(result) ));
-    })
-}
-
-
 function checkFileExistsSync(filepath){
     let flag = true;
     try{
@@ -439,10 +332,6 @@ const mapEndpointToHandlerFunction = {
     "/buildings/attributes": getBuildingAttributes,
     "/images/360deg/locations": get360ImageLocations,
     "/metrostation/pointcloud": getMetroPointcloud,
-    "/sewers/shafts": getSewerShafts,
-    "/sewers/shafts/attributes": getSewerShaftsAttributes,
-    "/sewers/pipes": getSewerPipes,
-    "/sewers/pipes/attributes": getSewerPipesAttributes,
     "/terrain/dem/:resolution":  handleDemRequest,
     "/terrain/3dmesh":  handle3dMeshRequest,
     "/weather/temperature": getSensorMeasurement,
