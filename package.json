@@ -12,7 +12,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "startNodemon": "nodemon server.js"
+    "startNodemon": "nodemon server.js",
+    "build": "./buildHelper/build.sh"
   },
   "name": "digital_twin_herne_backend",
   "version": "1.0.0",
